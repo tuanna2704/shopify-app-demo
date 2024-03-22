@@ -18,3 +18,12 @@ export const createOrUpdate = async (orderData: Prisma.OrderWhereInput) => {
     console.error(error)
   }
 }
+
+export async function getOrders() {
+  const orders = await prisma.order.findMany({
+    where: {},
+    orderBy: { id: "desc" },
+  });
+
+  return orders;
+}
