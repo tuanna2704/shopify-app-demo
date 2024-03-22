@@ -20,3 +20,16 @@ model Session {
   accessToken String
   userId      BigInt?
 }
+
+model Order {
+  id               Int      @id @default(autoincrement())
+  orderId          Int
+  orderNumber      Int
+  totalPrice       String?
+  paymentGateway   String
+  customerEmail    String?
+  customerFullName String?
+  customerAddress  String?
+  tags             String?
+  createdAt        DateTime @default(now())
+}
