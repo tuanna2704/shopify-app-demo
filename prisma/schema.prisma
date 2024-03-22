@@ -23,7 +23,7 @@ model Session {
 
 model Order {
   id               Int      @id @default(autoincrement())
-  orderId          Int
+  orderId          String   @unique
   orderNumber      Int
   totalPrice       String?
   paymentGateway   String
