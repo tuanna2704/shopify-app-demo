@@ -3,7 +3,7 @@
 client_id = "0d30a301d36f6af41456baeb1966ed2c"
 name = "fruit-app"
 handle = "fruit-app-3"
-application_url = "https://bd-authentication-individually-monsters.trycloudflare.com"
+application_url = "https://cables-fish-hopes-keys.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_draft_orders,read_orders,read_products,write_draft
 
 [auth]
 redirect_urls = [
-  "https://bd-authentication-individually-monsters.trycloudflare.com/auth/callback",
-  "https://bd-authentication-individually-monsters.trycloudflare.com/auth/shopify/callback",
-  "https://bd-authentication-individually-monsters.trycloudflare.com/api/auth/callback"
+  "https://cables-fish-hopes-keys.trycloudflare.com/auth/callback",
+  "https://cables-fish-hopes-keys.trycloudflare.com/auth/shopify/callback",
+  "https://cables-fish-hopes-keys.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

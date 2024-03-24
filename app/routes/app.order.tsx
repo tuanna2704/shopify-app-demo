@@ -4,13 +4,14 @@ import { authenticate } from "../shopify.server";
 import { Card, EmptyState, Layout, Page, IndexTable } from "@shopify/polaris";
 import { Order } from "@prisma/client";
 import { getOrders } from "../models/orders";
+import CsvDownloadButton from "react-json-to-csv";
 
 export async function loader({ request }: { request: any }) {
   const { admin, session } = await authenticate.admin(request);
   const orders = await getOrders();
 
   return json({
-    orders
+    orders,
   });
 }
 
@@ -24,7 +25,7 @@ const OrderTable = ({ orders }: { orders: Order[] }) => (
   <IndexTable
     itemCount={orders.length}
     headings={[
-      { title: "Order Id"},
+      { title: "Order Id" },
       { title: "Order Number" },
       { title: "Total Price" },
       { title: "Date created" },
@@ -33,16 +34,20 @@ const OrderTable = ({ orders }: { orders: Order[] }) => (
     selectable={false}
   >
     {orders.map((order: Order) => (
-      <OrderTableRow order={order} />
+      <OrderTableRow order={order} key={order.id} />
     ))}
   </IndexTable>
 );
 
 const OrderTableRow = ({ order }: { order: Order }) => {
-  const orderUrl = `https://admin.shopify.com/store/tuanna2704-store1/orders/${order.orderId}`
+  const orderUrl = `https://admin.shopify.com/store/tuanna2704-store1/orders/${order.orderId}`;
   return (
-    <IndexTable.Row id={order.id.toString()} position={order.id} key={order.id}>
-      <IndexTable.Cell><Link to={`${orderUrl}`} target="_blank">{order.orderId}</Link></IndexTable.Cell>
+    <IndexTable.Row id={order.id.toString()} position={order.id}>
+      <IndexTable.Cell>
+        <Link to={`${orderUrl}`} target="_blank">
+          {order.orderId}
+        </Link>
+      </IndexTable.Cell>
       <IndexTable.Cell>{order.orderNumber}</IndexTable.Cell>
       <IndexTable.Cell>{order.totalPrice}</IndexTable.Cell>
       <IndexTable.Cell>
@@ -53,12 +58,55 @@ const OrderTableRow = ({ order }: { order: Order }) => {
   );
 };
 
+const exportCSV = (orders: Order[]) => {
+  // Create a Blob object with the CSV data
+  const csvContent = orders
+    .map(
+      ({
+        orderId,
+        orderNumber,
+        totalPrice,
+        paymentGateway,
+        customerEmail,
+        customerFullName,
+        customerAddress,
+        tags,
+        createdAt,
+      }) =>
+        [
+          orderId,
+          orderNumber,
+          totalPrice,
+          paymentGateway,
+          customerEmail,
+          customerFullName,
+          customerAddress,
+          ((tags || '') as string).replaceAll(',', ';'),
+          createdAt,
+        ].join(","),
+    )
+    .join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+  // Create a temporary anchor element and trigger a download
+  const link = document.createElement("a");
+  if (link.download !== undefined) {
+    // feature detection
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "orders.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
 export default function Index() {
-  const { orders }: { orders: any[]} = useLoaderData();
+  const { orders }: { orders: any[] } = useLoaderData();
   return (
     <Page>
       <ui-title-bar title="QR codes">
-        <button variant="primary" onClick={() => console.log('export order to csv')}>
+        <button variant="primary" onClick={() => exportCSV(orders)}>
           Export To CSV
         </button>
       </ui-title-bar>
