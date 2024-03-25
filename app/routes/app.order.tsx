@@ -4,9 +4,8 @@ import { authenticate } from "../shopify.server";
 import { Card, EmptyState, Layout, Page, IndexTable } from "@shopify/polaris";
 import { Order } from "@prisma/client";
 import { getOrders } from "../models/orders";
-import CsvDownloadButton from "react-json-to-csv";
 
-export async function loader({ request }: { request: any }) {
+export async function loader({ request, params }: { request: any, params: any }) {
   const { admin, session } = await authenticate.admin(request);
   const orders = await getOrders();
 
@@ -28,10 +27,10 @@ const OrderTable = ({ orders }: { orders: Order[] }) => (
       { title: "Order Id" },
       { title: "Order Number" },
       { title: "Customer Name" },
-      { title: "Customer Address" },
       { title: "Total Price" },
       { title: "Date created" },
       { title: "Tags" },
+      { title: "" },
     ]}
     selectable={false}
   >
@@ -43,6 +42,7 @@ const OrderTable = ({ orders }: { orders: Order[] }) => (
 
 const OrderTableRow = ({ order }: { order: Order }) => {
   const orderUrl = `https://admin.shopify.com/store/tuanna2704-store1/orders/${order.orderId}`;
+
   return (
     <IndexTable.Row id={order.id.toString()} position={order.id}>
       <IndexTable.Cell>
@@ -52,12 +52,14 @@ const OrderTableRow = ({ order }: { order: Order }) => {
       </IndexTable.Cell>
       <IndexTable.Cell>{order.orderNumber}</IndexTable.Cell>
       <IndexTable.Cell>{order.customerFullName}</IndexTable.Cell>
-      <IndexTable.Cell>{order.customerAddress}</IndexTable.Cell>
       <IndexTable.Cell>{order.totalPrice}</IndexTable.Cell>
       <IndexTable.Cell>
         {new Date(order.createdAt).toDateString()}
       </IndexTable.Cell>
       <IndexTable.Cell>{order.tags}</IndexTable.Cell>
+      <IndexTable.Cell>
+        <Link to={`/app/orderEdit/${order.orderId}`}>Edit Tag</Link>
+      </IndexTable.Cell>
     </IndexTable.Row>
   );
 };
@@ -109,7 +111,7 @@ export default function Index() {
   const { orders }: { orders: any[] } = useLoaderData();
   return (
     <Page>
-      <ui-title-bar title="QR codes">
+      <ui-title-bar title="Order Table">
         <button variant="primary" onClick={() => exportCSV(orders)}>
           Export To CSV
         </button>
