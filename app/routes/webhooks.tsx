@@ -45,6 +45,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           total_price: totalPrice,
           payment_gateway_names: paymentGateway,
           tags,
+          customer: { email, first_name, last_name, default_address: { address1, city, country } }
         } = payload as any;
         const response = await createOrUpdate({
           orderId: orderId.toString(),
@@ -52,9 +53,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           totalPrice,
           paymentGateway: paymentGateway.join(","),
           tags,
-          customerAddress: "",
-          customerEmail: "",
-          customerFullName: "",
+          customerAddress: `${address1}, ${city}, ${country}`,
+          customerEmail: email,
+          customerFullName: `${first_name} ${last_name}`,
         });
         console.log(response);
       }
@@ -69,6 +70,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           total_price: totalPrice,
           payment_gateway_names: paymentGateway,
           tags,
+          customer: { email, first_name, last_name, default_address: { address1, city, country } }
         } = payload as any;
         const response = await createOrUpdate({
           orderId: orderId.toString(),
@@ -76,9 +78,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           totalPrice,
           paymentGateway: paymentGateway.join(","),
           tags,
-          customerAddress: "",
-          customerEmail: "",
-          customerFullName: "",
+          customerAddress: `${address1}, ${city}, ${country}`,
+          customerEmail: email,
+          customerFullName: `${first_name} ${last_name}`,
         });
         console.log(response);
       }

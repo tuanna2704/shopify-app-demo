@@ -27,6 +27,8 @@ const OrderTable = ({ orders }: { orders: Order[] }) => (
     headings={[
       { title: "Order Id" },
       { title: "Order Number" },
+      { title: "Customer Name" },
+      { title: "Customer Address" },
       { title: "Total Price" },
       { title: "Date created" },
       { title: "Tags" },
@@ -49,6 +51,8 @@ const OrderTableRow = ({ order }: { order: Order }) => {
         </Link>
       </IndexTable.Cell>
       <IndexTable.Cell>{order.orderNumber}</IndexTable.Cell>
+      <IndexTable.Cell>{order.customerFullName}</IndexTable.Cell>
+      <IndexTable.Cell>{order.customerAddress}</IndexTable.Cell>
       <IndexTable.Cell>{order.totalPrice}</IndexTable.Cell>
       <IndexTable.Cell>
         {new Date(order.createdAt).toDateString()}
@@ -79,9 +83,9 @@ const exportCSV = (orders: Order[]) => {
           totalPrice,
           paymentGateway,
           customerEmail,
-          customerFullName,
-          customerAddress,
-          ((tags || '') as string).replaceAll(',', ';'),
+          `"${customerFullName}"`,
+          `"${customerAddress}"`,
+          `"${tags}"`,
           createdAt,
         ].join(","),
     )
