@@ -3,7 +3,7 @@
 client_id = "0d30a301d36f6af41456baeb1966ed2c"
 name = "fruit-app"
 handle = "fruit-app-3"
-application_url = "https://environments-sonic-ch-stewart.trycloudflare.com"
+application_url = "https://dare-ion-alt-crimes.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_draft_orders,read_orders,read_products,write_draft
 
 [auth]
 redirect_urls = [
-  "https://environments-sonic-ch-stewart.trycloudflare.com/auth/callback",
-  "https://environments-sonic-ch-stewart.trycloudflare.com/auth/shopify/callback",
-  "https://environments-sonic-ch-stewart.trycloudflare.com/api/auth/callback"
+  "https://dare-ion-alt-crimes.trycloudflare.com/auth/callback",
+  "https://dare-ion-alt-crimes.trycloudflare.com/auth/shopify/callback",
+  "https://dare-ion-alt-crimes.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

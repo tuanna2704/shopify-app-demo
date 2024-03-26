@@ -4,10 +4,24 @@ import { authenticate } from "../shopify.server";
 
 export async function loader({ request, params }: { request: any, params: any }) {
   const { admin, session } = await authenticate.admin(request);
-  console.log(params);
-  return json({
-    tuanna: 'tuanna',
-  }); 
+  const response = await admin.graphql(`
+    {
+      order(id: "gid://shopify/Order/${params.id}") {
+        id
+        tags
+        customer {
+          id
+          displayName
+          email
+        }
+      }
+    }`);
+
+  const {
+    data: { order }
+  } = await response.json();
+
+  return json(order);
 }
 
 export default function Index() {
