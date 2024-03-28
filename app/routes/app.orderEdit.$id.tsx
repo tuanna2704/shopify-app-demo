@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { json } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import { useLoaderData, Form, useActionData } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
 import {
-  InlineStack,
   Page,
   Card,
   Tag,
@@ -11,6 +10,39 @@ import {
   BlockStack,
   Button,
 } from "@shopify/polaris";
+
+export const action = async ({
+  request,
+  params,
+}: {
+  request: any;
+  params: any;
+}) => {
+  const { admin, session } = await authenticate.admin(request);
+  const body = await request.formData();
+  const adds = body.get("adds");
+  const removes = body.get("removes");
+  const response = await admin.graphql(`
+  mutation {
+    tagsAdd(id: "gid://shopify/Order/${params.id}", tags: [${adds.split(",").map((tag: string) => `"${tag}"`)}]) {
+      userErrors {
+        field
+        message
+      }
+    }
+
+    tagsRemove(id: "gid://shopify/Order/${params.id}", tags: [${removes.split(",").map((tag: string) => `"${tag}"`)}]) {
+      userErrors {
+        field
+        message
+      }
+    }
+  }`);
+
+  const data = await response.json();
+  console.log(data);
+  return json({ data });
+};
 
 export async function loader({
   request,
@@ -38,54 +70,72 @@ export async function loader({
     data: { order },
   } = await response.json();
 
-  return json(order);
+  return json({ order, params });
 }
 
 export default function Edit() {
-  const data: { tags: string[], name: string } = useLoaderData();
-  const [tags, setTags] = useState<string[]>(data.tags);
+  const actionData = useActionData();
+  console.log(actionData);
+  const {
+    order,
+    params,
+  }: { order: { tags: string[]; name: string }; params: { id: string } } =
+    useLoaderData();
+  const [tags, setTags] = useState<string[]>(order.tags);
+  const [tagsToAdd, setTagToAdd] = useState<string[]>([]);
+  const [tagsToRemove, setTagsToRemove] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
 
   const handleAddTag = () => {
     if (tagInput.trim() !== "") {
       setTags([...tags, tagInput.trim()]);
       setTagInput("");
+      setTagToAdd([...tagsToAdd, tagInput.trim()]);
     }
   };
 
   const handleRemoveTag = (index: number) => {
     const updatedTags = [...tags];
-    updatedTags.splice(index, 1);
+    const remove = updatedTags.splice(index, 1);
     setTags(updatedTags);
+    setTagsToRemove([...tagsToRemove, remove[0]]);
   };
 
-  const handleSaveTag = () => {
-    console.log("Save tags", tags);
-  }
-
   return (
-    <Page title={`Edit Tag for Order ${data.name}`}>
+    <Page title={`Edit Tag for Order ${order.name}`}>
       <Card>
-        <InlineStack wrap={false} gap={"300"}>
+        <div style={{ lineHeight: "32px" }}>
           <div>Tag list: </div>
           {tags.map((tag, index) => (
-            <Tag key={index} onRemove={() => handleRemoveTag(index)}>
-              {tag}
-            </Tag>
+            <>
+              <Tag key={index} onRemove={() => handleRemoveTag(index)}>
+                {tag}
+              </Tag>
+              &nbsp;&nbsp;&nbsp;
+            </>
           ))}
-        </InlineStack>
-
-        <BlockStack gap="500">
-          <br />
-          <TextField
-            label="Add Tag For Order:"
-            value={tagInput}
-            onChange={(value) => setTagInput(value)}
-            autoComplete="off"
-          />
-          <Button onClick={handleAddTag}>Add Tag</Button>
-          <Button onClick={handleSaveTag} variant="primary">Save</Button>
-        </BlockStack>
+        </div>
+        <Form method="post">
+          <BlockStack gap="500">
+            <br />
+            <input
+              type="hidden"
+              name="removes"
+              value={tagsToRemove.join(",")}
+            />
+            <input type="hidden" name="adds" value={tagsToAdd.join(",")} />
+            <TextField
+              label="Add Tag For Order:"
+              value={tagInput}
+              onChange={(value) => setTagInput(value)}
+              autoComplete="off"
+            />
+            <Button onClick={handleAddTag}>Add Tag</Button>
+            <Button variant="primary" submit>
+              Save
+            </Button>
+          </BlockStack>
+        </Form>
       </Card>
     </Page>
   );
