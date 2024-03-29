@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { json } from "@remix-run/node";
 import { useLoaderData, Form, useActionData } from "@remix-run/react";
 import { authenticate } from "../shopify.server";
@@ -9,6 +9,8 @@ import {
   TextField,
   BlockStack,
   Button,
+  Toast,
+  Frame,
 } from "@shopify/polaris";
 
 export const action = async ({
@@ -40,8 +42,11 @@ export const action = async ({
   }`);
 
   const data = await response.json();
-  console.log(data);
-  return json({ data });
+  return json({
+    data,
+    adds: adds === "" ? undefined : adds.split(","),
+    removes: removes === "" ? undefined : removes.split(","),
+  });
 };
 
 export async function loader({
@@ -74,18 +79,46 @@ export async function loader({
 }
 
 export default function Edit() {
-  const actionData = useActionData();
-  console.log(actionData);
+  const actionResponse: any = useActionData();
   const {
     order,
-    params,
   }: { order: { tags: string[]; name: string }; params: { id: string } } =
     useLoaderData();
+  const [toastActive, setToastActive] = useState(false);
+  const [toastMessage, setToastMessage] = useState("false");
   const [tags, setTags] = useState<string[]>(order.tags);
   const [tagsToAdd, setTagToAdd] = useState<string[]>([]);
   const [tagsToRemove, setTagsToRemove] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
 
+  const toggleActive = useCallback(
+    () => setToastActive((active) => !active),
+    [],
+  );
+
+  useEffect(() => {
+    if (actionResponse) {
+      const {
+        data: {
+          data: { tagsAdd, tagsRemove },
+        },
+        adds,
+        removes,
+      } = actionResponse;
+      if (
+        tagsAdd.userErrors.length === 0 ||
+        tagsRemove.userErrors.length === 0
+      ) {
+        toggleActive();
+        const message = "Tags updated successfully," +
+        (adds ? `Added: ${adds}` : '') +
+        (removes ? ` Removed: ${removes}` : '')
+        setToastMessage(message);
+        setTagToAdd([]);
+        setTagsToRemove([]);
+      }
+    }
+  }, [actionResponse]);
   const handleAddTag = () => {
     if (tagInput.trim() !== "") {
       setTags([...tags, tagInput.trim()]);
@@ -102,41 +135,51 @@ export default function Edit() {
   };
 
   return (
-    <Page title={`Edit Tag for Order ${order.name}`}>
-      <Card>
-        <div style={{ lineHeight: "32px" }}>
-          <div>Tag list: </div>
-          {tags.map((tag, index) => (
-            <>
-              <Tag key={index} onRemove={() => handleRemoveTag(index)}>
-                {tag}
-              </Tag>
-              &nbsp;&nbsp;&nbsp;
-            </>
-          ))}
-        </div>
-        <Form method="post">
-          <BlockStack gap="500">
-            <br />
-            <input
-              type="hidden"
-              name="removes"
-              value={tagsToRemove.join(",")}
-            />
-            <input type="hidden" name="adds" value={tagsToAdd.join(",")} />
-            <TextField
-              label="Add Tag For Order:"
-              value={tagInput}
-              onChange={(value) => setTagInput(value)}
-              autoComplete="off"
-            />
-            <Button onClick={handleAddTag}>Add Tag</Button>
-            <Button variant="primary" submit>
-              Save
-            </Button>
-          </BlockStack>
-        </Form>
-      </Card>
-    </Page>
+    <Frame>
+      <Page title={`Edit Tag for Order ${order.name}`}>
+        <Card>
+          <div style={{ lineHeight: "32px" }}>
+            <div>Tag list: </div>
+            {tags.map((tag, index) => (
+              <>
+                <Tag key={index} onRemove={() => handleRemoveTag(index)}>
+                  {tag}
+                </Tag>
+                &nbsp;&nbsp;&nbsp;
+              </>
+            ))}
+          </div>
+          <Form method="post">
+            <BlockStack gap="500">
+              <br />
+              <input
+                type="hidden"
+                name="removes"
+                value={tagsToRemove.join(",")}
+              />
+              <input type="hidden" name="adds" value={tagsToAdd.join(",")} />
+              <TextField
+                label="Add Tag For Order:"
+                value={tagInput}
+                onChange={(value) => setTagInput(value)}
+                autoComplete="off"
+              />
+              <Button onClick={handleAddTag}>Add Tag</Button>
+              <Button
+                variant="primary"
+                submit
+                disabled={tagsToAdd.length === 0 && tagsToRemove.length === 0}
+              >
+                Save
+              </Button>
+            </BlockStack>
+          </Form>
+        </Card>
+        {toastActive ? (
+          <Toast content={toastMessage} onDismiss={toggleActive} />
+        ) : null}
+        ;
+      </Page>
+    </Frame>
   );
 }

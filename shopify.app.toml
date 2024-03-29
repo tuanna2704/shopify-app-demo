@@ -3,7 +3,7 @@
 client_id = "0d30a301d36f6af41456baeb1966ed2c"
 name = "fruit-app"
 handle = "fruit-app-3"
-application_url = "https://resolutions-peter-selling-christmas.trycloudflare.com"
+application_url = "https://later-joint-imposed-jun.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_customers,read_draft_orders,read_orders,read_products,write_draft
 
 [auth]
 redirect_urls = [
-  "https://resolutions-peter-selling-christmas.trycloudflare.com/auth/callback",
-  "https://resolutions-peter-selling-christmas.trycloudflare.com/auth/shopify/callback",
-  "https://resolutions-peter-selling-christmas.trycloudflare.com/api/auth/callback"
+  "https://later-joint-imposed-jun.trycloudflare.com/auth/callback",
+  "https://later-joint-imposed-jun.trycloudflare.com/auth/shopify/callback",
+  "https://later-joint-imposed-jun.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
